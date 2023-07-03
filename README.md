@@ -1,2 +1,7 @@
 # personal-photo-gallery
-A serverless personal photo gallery application to manage and showcase a personal photo collection. Backend implemented in Go with Echo. Frontend built with React, TypeScript, and Next.js. Utilizes AWS Lambda, API Gateway, DynamoDB, S3, Aurora MySQL, and GitHub Actions for CI/CD.
+
+このプロジェクトは、個人の写真コレクションを管理および展示するプラットフォームとして機能します。 このアプリケーションは、Lambda、API Gateway、DynamoDB、S3、Aurora MySQLなどのAWSサービスとともに、サーバーレスアーキテクチャを使用して開発されました。
+
+Back-End はEchoフレームワークを活用してGoで実装され、フロントエンドはTypeScriptとNext.jsフレームワークと共にReactを使用して構築されています。CI/CDパイプラインはGitHub Actionsを使用して実装され、コードベースのシームレスな統合と展開を保証します。
+
+このアプリケーションを使用すると、写真のアップロード、写真のリストと詳細の検索、写真の詳細の更新、特定の写真の削除が可能です
