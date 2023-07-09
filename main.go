@@ -1,17 +1,34 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
+	"log"
 
-	"github.com/labstack/echo"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 func main() {
-	e := echo.New()
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("ap-northeast-1")},
+	)
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	e.Start(":8080")
+	svc := s3.New(sess)
+
+	result, err := svc.ListBuckets(nil)
+	if err != nil {
+		log.Println("Failed to list buckets", err)
+		return
+	}
+
+	log.Println("Buckets:")
+	for _, b := range result.Buckets {
+		fmt.Printf("* %s created on %s\n",
+			aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
+	}
 }

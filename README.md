@@ -32,4 +32,7 @@ _近日公開..._
 
 ## ライセンス
 
-このプロ
+----
+
+# docekr 실행
+docker run -p 8080:8080 --env-file dev.env personal-photo-gallery-app
