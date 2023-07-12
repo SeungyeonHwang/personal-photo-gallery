@@ -31,6 +31,10 @@ type UserConfirmationRequest struct {
 	Code     string `json:"code"`
 }
 
+type UserLogoutRequest struct {
+	AccessToken string `json:"access_token"`
+}
+
 func RegisterUser(c echo.Context) error {
 	request := new(UserRegistrationRequest)
 	if err := c.Bind(request); err != nil {
@@ -136,7 +140,31 @@ func ConfirmUser(c echo.Context) error {
 	})
 }
 
+// 一般的なログアウトプロセスではなく、セキュリティ的な機能としてユーザーのすべてのトークンを無効化させる機能。
+// 通常のログアウトプロセスはクライアント側で行う。
 func LogoutUser(c echo.Context) error {
-	// Implement user logout logic with AWS Cognito
-	return c.String(http.StatusOK, "User logged out")
+	request := new(UserLogoutRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Bad Request: " + err.Error()})
+	}
+
+	input := cognitoidentityprovider.GlobalSignOutInput{
+		AccessToken: aws.String(request.AccessToken),
+	}
+
+	_, err := config.CognitoClient.GlobalSignOut(&input)
+	if err != nil {
+		if awsErr, ok := err.(awserr.Error); ok {
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"error": awsErr.Message(),
+			})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "An error occurred while logging out the user",
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "User successfully logged out",
+	})
 }
