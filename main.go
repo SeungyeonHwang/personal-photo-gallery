@@ -1,34 +1,24 @@
 package main
 
 import (
-	"fmt"
-	"log"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/SeungyeonHwang/personal-photo-gallery/handlers"
+	"github.com/labstack/echo/v4"
 )
 
 func main() {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("ap-northeast-1")},
-	)
+	e := echo.New()
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	//userHandler
+	e.POST("/users/register", handlers.RegisterUser)
+	e.POST("/users/login", handlers.LoginUser)
+	e.GET("/users/logout", handlers.LogoutUser)
 
-	svc := s3.New(sess)
+	//photoHandler
+	e.POST("/photos", handlers.UploadPhoto)
+	e.GET("/photos", handlers.GetPhotoList)
+	e.GET("/photos/:id", handlers.GetPhotoDetails)
+	e.PUT("/photos/:id", handlers.UpdatePhotoDetails)
+	e.DELETE("/photos/:id", handlers.DeletePhoto)
 
-	result, err := svc.ListBuckets(nil)
-	if err != nil {
-		log.Println("Failed to list buckets", err)
-		return
-	}
-
-	log.Println("Buckets:")
-	for _, b := range result.Buckets {
-		fmt.Printf("* %s created on %s\n",
-			aws.StringValue(b.Name), aws.TimeValue(b.CreationDate))
-	}
+	e.Start(":8080")
 }
