@@ -115,7 +115,10 @@ func LoginUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal Server Error: " + err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, result.AuthenticationResult)
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "User successfully logged in",
+		"token":   *result.AuthenticationResult.IdToken,
+	})
 }
 
 func ConfirmUser(c echo.Context) error {
@@ -142,6 +145,7 @@ func ConfirmUser(c echo.Context) error {
 
 // 一般的なログアウトプロセスではなく、セキュリティ的な機能としてユーザーのすべてのトークンを無効化させる機能。
 // 通常のログアウトプロセスはクライアント側で行う。
+// TODO:token 취득 로직 추가
 func LogoutUser(c echo.Context) error {
 	request := new(UserLogoutRequest)
 	if err := c.Bind(request); err != nil {
