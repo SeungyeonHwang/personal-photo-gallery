@@ -11,6 +11,7 @@ func main() {
 	//userHandler
 	e.POST("/users/register", handlers.RegisterUser)
 	e.POST("/users/login", handlers.LoginUser)
+	e.POST("/users/confirm", handlers.ConfirmUser)
 	e.GET("/users/logout", handlers.LogoutUser)
 
 	//photoHandler

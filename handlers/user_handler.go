@@ -21,6 +21,16 @@ type UserRegistrationRequest struct {
 	Address     string `json:"address"`
 }
 
+type UserLoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type UserConfirmationRequest struct {
+	Username string `json:"username"`
+	Code     string `json:"code"`
+}
+
 func RegisterUser(c echo.Context) error {
 	request := new(UserRegistrationRequest)
 	if err := c.Bind(request); err != nil {
@@ -78,8 +88,52 @@ func RegisterUser(c echo.Context) error {
 }
 
 func LoginUser(c echo.Context) error {
-	// Implement user login logic with AWS Cognito
-	return c.String(http.StatusOK, "User logged in")
+	request := new(UserLoginRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Bad Request: " + err.Error()})
+	}
+
+	authFlow := "USER_PASSWORD_AUTH"
+
+	authParam := map[string]*string{
+		"USERNAME": &request.Username,
+		"PASSWORD": &request.Password,
+	}
+
+	input := &cognitoidentityprovider.InitiateAuthInput{
+		AuthFlow:       &authFlow,
+		AuthParameters: authParam,
+		ClientId:       aws.String("7stheq86csp495q9u0i71rm4la"),
+	}
+
+	result, err := config.CognitoClient.InitiateAuth(input)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal Server Error: " + err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, result.AuthenticationResult)
+}
+
+func ConfirmUser(c echo.Context) error {
+	request := new(UserConfirmationRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Bad Request: " + err.Error()})
+	}
+
+	input := &cognitoidentityprovider.ConfirmSignUpInput{
+		ClientId:         aws.String("7stheq86csp495q9u0i71rm4la"),
+		ConfirmationCode: aws.String(request.Code),
+		Username:         aws.String(request.Username),
+	}
+
+	_, err := config.CognitoClient.ConfirmSignUp(input)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal Server Error: " + err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "User successfully confirmed",
+	})
 }
 
 func LogoutUser(c echo.Context) error {
