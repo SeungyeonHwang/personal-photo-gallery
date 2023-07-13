@@ -36,3 +36,36 @@ _近日公開..._
 
 # docekr 실행
 docker run -p 8080:8080 --env-file dev.env personal-photo-gallery-app
+```
+personal-photo-gallery
+├─ .gitignore
+├─ Dockerfile
+├─ README.md
+├─ aws
+│  └─ lambda
+│     ├─ photo
+│     │  ├─ delete.go
+│     │  ├─ get_detail.go
+│     │  ├─ get_list.go
+│     │  ├─ update.go
+│     │  └─ upload.go
+│     └─ user
+│        ├─ confirm.go
+│        ├─ login.go
+│        ├─ logout.go
+│        └─ register.go
+├─ docker-compose.yml
+├─ go.mod
+├─ go.sum
+├─ handlers
+│  ├─ photo_handler.go
+│  └─ user_handler.go
+├─ main.go
+├─ middleware
+│  └─ jwtvalidation.go
+├─ models
+├─ services
+├─ template.yml
+└─ tests
+
+```

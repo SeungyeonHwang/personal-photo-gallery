@@ -3,6 +3,7 @@ module github.com/SeungyeonHwang/personal-photo-gallery
 go 1.19
 
 require (
+	github.com/aws/aws-lambda-go v1.41.0
 	github.com/aws/aws-sdk-go v1.44.298
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/lestrrat-go/jwx v1.2.26
