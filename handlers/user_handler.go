@@ -1,175 +1,173 @@
-// TODO: gonnado delete
-// package handlers
+package handlers
 
-// import (
-// 	"net/http"
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
 
-// 	"github.com/SeungyeonHwang/personal-photo-gallery/config"
-// 	"github.com/aws/aws-sdk-go/aws"
-// 	"github.com/aws/aws-sdk-go/aws/awserr"
-// 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
-// 	"github.com/labstack/echo/v4"
-// )
+	"github.com/SeungyeonHwang/personal-photo-gallery/models"
+	"github.com/SeungyeonHwang/personal-photo-gallery/services"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/sirupsen/logrus"
+)
 
-// type UserRegistrationRequest struct {
-// 	Username    string `json:"username"`
-// 	Password    string `json:"password"`
-// 	GivenName   string `json:"given_name"`
-// 	FamilyName  string `json:"family_name"`
-// 	Gender      string `json:"gender"`
-// 	Birthdate   string `json:"birthdate"`
-// 	PhoneNumber string `json:"phone_number"`
-// 	Address     string `json:"address"`
-// }
+type UserHandler struct {
+	UserService services.UserService
+	SSMService  services.SSMService
+	ClientId    string
+}
 
-// type UserLoginRequest struct {
-// 	Username string `json:"username"`
-// 	Password string `json:"password"`
-// }
+func (uh *UserHandler) GetClientId() (string, error) {
+	if uh.ClientId != "" {
+		return uh.ClientId, nil
+	}
+	clientId, err := uh.SSMService.GetParameter("/cognito/client_id")
+	if err != nil {
+		return "", err
+	}
+	uh.ClientId = clientId
+	return clientId, nil
+}
 
-// type UserConfirmationRequest struct {
-// 	Username string `json:"username"`
-// 	Code     string `json:"code"`
-// }
+func (uh *UserHandler) HandleRegistrationRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	regReq := new(models.UserRegistrationRequest)
+	err := json.Unmarshal([]byte(request.Body), regReq)
+	if err != nil {
+		logrus.Errorf("Failed to parse request body: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusBadRequest,
+			Body:       fmt.Sprintf("Failed to parse request body: %v", err),
+		}, nil
+	}
 
-// type UserLogoutRequest struct {
-// 	AccessToken string `json:"access_token"`
-// }
+	clientId, err := uh.GetClientId()
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       fmt.Sprintf("Failed to get Cognito client ID: %v", err),
+		}, nil
+	}
 
-// func RegisterUser(c echo.Context) error {
-// 	request := new(UserRegistrationRequest)
-// 	if err := c.Bind(request); err != nil {
-// 		return err
-// 	}
+	err = uh.UserService.RegisterUser(regReq, clientId)
+	if err != nil {
+		logrus.Warnf("Error while registering user %s: %v", regReq.Username, err)
+		if awsErr, ok := err.(awserr.Error); ok {
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       fmt.Sprintf("AWS error while registering user: %v", awsErr.Message()),
+			}, nil
+		} else {
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       fmt.Sprintf("Unknown error occurred while registering user: %v", err),
+			}, nil
+		}
+	}
 
-// 	input := &cognitoidentityprovider.SignUpInput{
-// 		ClientId: aws.String("7stheq86csp495q9u0i71rm4la"),
-// 		Password: aws.String(request.Password),
-// 		Username: aws.String(request.Username),
-// 		UserAttributes: []*cognitoidentityprovider.AttributeType{
-// 			{
-// 				Name:  aws.String("given_name"),
-// 				Value: aws.String(request.GivenName),
-// 			},
-// 			{
-// 				Name:  aws.String("family_name"),
-// 				Value: aws.String(request.FamilyName),
-// 			},
-// 			{
-// 				Name:  aws.String("gender"),
-// 				Value: aws.String(request.Gender),
-// 			},
-// 			{
-// 				Name:  aws.String("birthdate"),
-// 				Value: aws.String(request.Birthdate),
-// 			},
-// 			{
-// 				Name:  aws.String("phone_number"),
-// 				Value: aws.String(request.PhoneNumber),
-// 			},
-// 			{
-// 				Name:  aws.String("address"),
-// 				Value: aws.String(request.Address),
-// 			},
-// 		},
-// 	}
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       "User registered successfully",
+	}, nil
+}
 
-// 	_, err := config.CognitoClient.SignUp(input)
-// 	if err != nil {
-// 		if awsErr, ok := err.(awserr.Error); ok {
-// 			return c.JSON(http.StatusInternalServerError, map[string]string{
-// 				"error": awsErr.Message(),
-// 			})
-// 		}
+func (uh *UserHandler) HandleConfirmationRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	confirmReq := new(models.UserConfirmationRequest)
+	err := json.Unmarshal([]byte(request.Body), confirmReq)
+	if err != nil {
+		logrus.Errorf("Failed to parse request body: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusBadRequest,
+			Body:       fmt.Sprintf("Failed to parse request body: %v", err),
+		}, nil
+	}
 
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{
-// 			"error": "An error occurred while registering the user",
-// 		})
-// 	}
+	clientId, err := uh.GetClientId()
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       fmt.Sprintf("Failed to get Cognito client ID: %v", err),
+		}, nil
+	}
 
-// 	return c.JSON(http.StatusOK, map[string]string{
-// 		"message": "User successfully registered",
-// 	})
-// }
+	err = uh.UserService.ConfirmUser(confirmReq.Code, confirmReq.Username, clientId)
+	if err != nil {
+		logrus.Warnf("Error while confirming user %s: %v", confirmReq.Username, err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       fmt.Sprintf("Internal Server Error: %v", err),
+		}, nil
+	}
 
-// func LoginUser(c echo.Context) error {
-// 	request := new(UserLoginRequest)
-// 	if err := c.Bind(request); err != nil {
-// 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Bad Request: " + err.Error()})
-// 	}
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       "User successfully confirmed",
+	}, nil
+}
 
-// 	authFlow := "USER_PASSWORD_AUTH"
+func (uh *UserHandler) HandleLoginRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	loginReq := new(models.UserLoginRequest)
+	err := json.Unmarshal([]byte(request.Body), loginReq)
+	if err != nil {
+		logrus.Errorf("Failed to parse request body: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusBadRequest,
+			Body:       fmt.Sprintf("Failed to parse request body: %v", err),
+		}, nil
+	}
 
-// 	authParam := map[string]*string{
-// 		"USERNAME": &request.Username,
-// 		"PASSWORD": &request.Password,
-// 	}
+	clientId, err := uh.GetClientId()
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       fmt.Sprintf("Failed to get Cognito client ID: %v", err),
+		}, nil
+	}
 
-// 	input := &cognitoidentityprovider.InitiateAuthInput{
-// 		AuthFlow:       &authFlow,
-// 		AuthParameters: authParam,
-// 		ClientId:       aws.String("7stheq86csp495q9u0i71rm4la"),
-// 	}
+	token, err := uh.UserService.LoginUser(loginReq, clientId)
+	if err != nil {
+		logrus.Warnf("Error while logging in user %s: %v", loginReq.Username, err)
+		if awsErr, ok := err.(awserr.Error); ok {
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       fmt.Sprintf("AWS error while logging in user: %v", awsErr.Message()),
+			}, nil
+		} else {
+			return events.APIGatewayProxyResponse{
+				StatusCode: http.StatusInternalServerError,
+				Body:       fmt.Sprintf("Unknown error occurred while logging in user: %v", err),
+			}, nil
+		}
+	}
 
-// 	result, err := config.CognitoClient.InitiateAuth(input)
-// 	if err != nil {
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal Server Error: " + err.Error()})
-// 	}
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       fmt.Sprintf("User logged in successfully, token: %s", *token),
+	}, nil
+}
 
-// 	return c.JSON(http.StatusOK, map[string]string{
-// 		"message": "User successfully logged in",
-// 		"token":   *result.AuthenticationResult.IdToken,
-// 	})
-// }
+func (uh *UserHandler) HandleLogoutRequest(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	logoutReq := new(models.UserGlobalLogoutRequest)
+	err := json.Unmarshal([]byte(request.Body), logoutReq)
+	if err != nil {
+		logrus.Errorf("Failed to parse request body: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusBadRequest,
+			Body:       fmt.Sprintf("Failed to parse request body: %v", err),
+		}, nil
+	}
 
-// func ConfirmUser(c echo.Context) error {
-// 	request := new(UserConfirmationRequest)
-// 	if err := c.Bind(request); err != nil {
-// 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Bad Request: " + err.Error()})
-// 	}
+	err = uh.UserService.LogoutUser(logoutReq)
+	if err != nil {
+		logrus.Warnf("Error while logging out user: %v", err)
+		return events.APIGatewayProxyResponse{
+			StatusCode: http.StatusInternalServerError,
+			Body:       fmt.Sprintf("Error while logging out user: %v", err),
+		}, nil
+	}
 
-// 	input := &cognitoidentityprovider.ConfirmSignUpInput{
-// 		ClientId:         aws.String("7stheq86csp495q9u0i71rm4la"),
-// 		ConfirmationCode: aws.String(request.Code),
-// 		Username:         aws.String(request.Username),
-// 	}
-
-// 	_, err := config.CognitoClient.ConfirmSignUp(input)
-// 	if err != nil {
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "Internal Server Error: " + err.Error()})
-// 	}
-
-// 	return c.JSON(http.StatusOK, map[string]string{
-// 		"message": "User successfully confirmed",
-// 	})
-// }
-
-// // 一般的なログアウトプロセスではなく、セキュリティ的な機能としてユーザーのすべてのトークンを無効化させる機能。
-// // 通常のログアウトプロセスはクライアント側で行う。
-// // TODO:token 취득 로직 추가
-// func LogoutUser(c echo.Context) error {
-// 	request := new(UserLogoutRequest)
-// 	if err := c.Bind(request); err != nil {
-// 		return c.JSON(http.StatusBadRequest, map[string]string{"message": "Bad Request: " + err.Error()})
-// 	}
-
-// 	input := cognitoidentityprovider.GlobalSignOutInput{
-// 		AccessToken: aws.String(request.AccessToken),
-// 	}
-
-// 	_, err := config.CognitoClient.GlobalSignOut(&input)
-// 	if err != nil {
-// 		if awsErr, ok := err.(awserr.Error); ok {
-// 			return c.JSON(http.StatusInternalServerError, map[string]string{
-// 				"error": awsErr.Message(),
-// 			})
-// 		}
-// 		return c.JSON(http.StatusInternalServerError, map[string]string{
-// 			"error": "An error occurred while logging out the user",
-// 		})
-// 	}
-
-// 	return c.JSON(http.StatusOK, map[string]string{
-// 		"message": "User successfully logged out",
-// 	})
-// }
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusOK,
+		Body:       "User successfully logged out",
+	}, nil
+}

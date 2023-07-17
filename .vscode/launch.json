@@ -3,6 +3,38 @@
         {
             "type": "aws-sam",
             "request": "direct-invoke",
+            "name": "personal-photo-gallery:LogOutUserFunction",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/template.yml",
+                "logicalId": "LogOutUserFunction"
+            },
+            "lambda": {
+                "payload": {
+                    "path": "${workspaceFolder}/tests/aws/cmd/request/logout.json"
+                },
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "personal-photo-gallery:LoginUserFunction",
+            "invokeTarget": {
+                "target": "template",
+                "templatePath": "${workspaceFolder}/template.yml",
+                "logicalId": "LoginUserFunction"
+            },
+            "lambda": {
+                "payload": {
+                    "path": "${workspaceFolder}/tests/aws/cmd/request/login.json"
+                },
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
             "name": "personal-photo-gallery:RegisterUserFunction",
             "invokeTarget": {
                 "target": "template",
@@ -10,7 +42,9 @@
                 "logicalId": "RegisterUserFunction"
             },
             "lambda": {
-                "payload": {},
+                "payload": {
+                    "path": "${workspaceFolder}/tests/aws/cmd/request/register.json"
+                },
                 "environmentVariables": {}
             }
         }

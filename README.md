@@ -35,14 +35,26 @@ _近日公開..._
 ----
 
 # docekr 실행
-docker run -p 8080:8080 --env-file dev.env personal-photo-gallery-app
+
+```
+
+# TODO
+1. aws 어필 포인트 스샷으로 첨부 cloudwatch , cognito 등
 ```
 personal-photo-gallery
-├─ .gitignore
-├─ Dockerfile
+├─ .aws-sam
+│  ├─ build
+│  │  ├─ RegisterUserFunction
+│  │  │  └─ register.go
+│  │  └─ template.yaml
+│  └─ build.toml
+├─ .env
+
+├─ .vscode
+│  └─ launch.json
 ├─ README.md
 ├─ aws
-│  └─ lambda
+│  └─ cmd
 │     ├─ photo
 │     │  ├─ delete.go
 │     │  ├─ get_detail.go
@@ -50,11 +62,14 @@ personal-photo-gallery
 │     │  ├─ update.go
 │     │  └─ upload.go
 │     └─ user
-│        ├─ confirm.go
-│        ├─ login.go
-│        ├─ logout.go
-│        └─ register.go
-├─ docker-compose.yml
+│        ├─ confirm
+│        │  └─ main.go
+│        ├─ login
+│        │  └─ main.go
+│        ├─ logout
+│        │  └─ main.go
+│        └─ register
+│           └─ main.go
 ├─ go.mod
 ├─ go.sum
 ├─ handlers
@@ -64,8 +79,18 @@ personal-photo-gallery
 ├─ middleware
 │  └─ jwtvalidation.go
 ├─ models
+│  └─ user.go
+├─ samconfig.toml
 ├─ services
+│  ├─ ssm_service.go
+│  ├─ ssm_service_impl.go
+│  ├─ user_service.go
+│  └─ user_service_impl.go
 ├─ template.yml
 └─ tests
+   └─ aws
+      └─ lambda
+         └─ request
+            └─ register.json
 
 ```

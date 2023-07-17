@@ -17,11 +17,32 @@ Resources:
                 type: aws_proxy
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RegisterUserFunction.Arn}/invocations
+          /users/confirm:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConfirmUserFunction.Arn}/invocations
+          /users/login:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LoginUserFunction.Arn}/invocations
+          /users/logout:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: GET
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LogOutUserFunction.Arn}/invocations
   RegisterUserFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: RegisterUserFunction
-      Handler: register.go
+      Handler: main.go
       Runtime: go1.x
       Events:
         RegisterUser:
@@ -31,3 +52,45 @@ Resources:
             Method: post
     Metadata:
       SamResourceId: RegisterUserFunction
+  ConfirmUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ConfirmUserFunction
+      Handler: main.go
+      Runtime: go1.x
+      Events:
+        ConfirmUser:
+          Type: Api
+          Properties:
+            Path: /users/confirm
+            Method: post
+    Metadata:
+      SamResourceId: ConfirmUserFunction
+  LoginUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: LoginUserFunction
+      Handler: main.go
+      Runtime: go1.x
+      Events:
+        ConfirmUser:
+          Type: Api
+          Properties:
+            Path: /users/login
+            Method: post
+    Metadata:
+      SamResourceId: LoginUserFunction
+  LogOutUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: LogOutUserFunction
+      Handler: main.go
+      Runtime: go1.x
+      Events:
+        ConfirmUser:
+          Type: Api
+          Properties:
+            Path: /users/logout
+            Method: get
+    Metadata:
+      SamResourceId: LogOutUserFunction
