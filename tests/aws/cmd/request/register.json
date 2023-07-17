@@ -1,0 +1,8 @@
+{
+  "body": "{\"username\":\"hwang.sy.test.1@gmail.com\",\"password\":\"!a12341234\",\"given_name\":\"KilDong\",\"family_name\":\"Hong\",\"gender\":\"male\",\"birthdate\":\"1980-01-01\",\"phone_number\":\"+123456789\",\"address\":\"123 Test St\"}",
+  "resource": "/users/register",
+  "httpMethod": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  }
+}

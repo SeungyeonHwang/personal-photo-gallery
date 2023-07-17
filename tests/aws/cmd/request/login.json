@@ -1,0 +1,10 @@
+{
+  "body": "{\"username\":\"hwang.sy.test.1@gmail.com\",\"password\":\"^Tmdfus0856\"}",
+  "resource": "/users/login",
+  "httpMethod": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  }
+}
+
+

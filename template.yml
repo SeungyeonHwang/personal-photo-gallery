@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  UserApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        openapi: "3.0.0"
+        info:
+          version: "1.0.0"
+        paths:
+          /users/register:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RegisterUserFunction.Arn}/invocations
+          /users/confirm:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConfirmUserFunction.Arn}/invocations
+          /users/login:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LoginUserFunction.Arn}/invocations
+          /users/logout:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: GET
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LogOutUserFunction.Arn}/invocations
+                
+  RegisterUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: aws/cmd/user/register
+      Handler: main.go
+      Runtime: go1.x
+      Events:
+        RegisterUser:
+          Type: Api
+          Properties:
+            Path: /users/register
+            Method: post
+
+  ConfirmUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: aws/cmd/user/confirm 
+      Handler: main.go
+      Runtime: go1.x
+      Events:
+        ConfirmUser:
+          Type: Api
+          Properties:
+            Path: /users/confirm
+            Method: post
+
+  LoginUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: aws/cmd/user/login 
+      Handler: main.go
+      Runtime: go1.x
+      Events:
+        ConfirmUser:
+          Type: Api
+          Properties:
+            Path: /users/login
+            Method: post
+
+  LogOutUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: aws/cmd/user/logout 
+      Handler: main.go
+      Runtime: go1.x
+      Events:
+        ConfirmUser:
+          Type: Api
+          Properties:
+            Path: /users/logout
+            Method: get
