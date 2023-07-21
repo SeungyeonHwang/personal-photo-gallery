@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  DeployType:
+    Type: String
+
+Resources:
+  UserUploadsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "pictorialdiary-user-uploads-${DeployType}-bucket"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - "*"
+
+  UserUploadsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref UserUploadsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowPublicReadAccess
+            Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${UserUploadsBucket}/*"
+          - Sid: AllowAuthenticatedWriteAccess
+            Effect: Allow
+            Principal:
+              # TODO:
+              # AWS: "arn:aws:iam::027320337304:role/Cognito_AuthenticatedUserAccessToS3"
+              # 편집할때 public
+              AWS: "*"
+            Action: "s3:PutObject"
+            Resource: !Sub "arn:aws:s3:::${UserUploadsBucket}/*"

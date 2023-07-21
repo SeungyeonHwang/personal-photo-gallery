@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  DeployType:
+    Type: String
+
+Resources:
+  UserActivityTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: activity_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: activity_id
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      TableName: !Sub "pictorialdiary-backend-${DeployType}-user-activity-table"
+      BillingMode: PROVISIONED
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W74
+            reason: This table is already created and cannot enable encryption.
+          - id: W78
+            reason: PointInTimeRecoveryEnabled is true only in production.
+          - id: W28
+            reason: We use custom table name

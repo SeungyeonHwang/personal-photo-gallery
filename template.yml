@@ -1,5 +1,15 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
+
+Description:  Pictorialdiary Backend Application for development
+
+Parameters:
+  DeployType:
+      Type: String
+      AllowedValues: [dev, stag, prod]
+      Default: dev
+      Description: Deploy Type
+
 Resources:
   UserApi:
     Type: AWS::Serverless::Api
@@ -38,7 +48,7 @@ Resources:
                 type: aws_proxy
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LogOutUserFunction.Arn}/invocations
-                
+
   RegisterUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -51,7 +61,6 @@ Resources:
           Properties:
             Path: /users/register
             Method: post
-
   ConfirmUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -64,7 +73,6 @@ Resources:
           Properties:
             Path: /users/confirm
             Method: post
-
   LoginUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -77,7 +85,6 @@ Resources:
           Properties:
             Path: /users/login
             Method: post
-
   LogOutUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -90,3 +97,18 @@ Resources:
           Properties:
             Path: /users/logout
             Method: get
+
+  DynamoStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: stacks/dynamo.yml
+      Parameters:
+        DeployType: !Ref DeployType
+  S3Stack:
+    Type: AWS::Serverless::Application
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      Location: stacks/s3.yml
+      Parameters:
+        DeployType: !Ref DeployType

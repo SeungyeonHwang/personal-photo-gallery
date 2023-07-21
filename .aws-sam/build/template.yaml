@@ -1,5 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Description: Pictorialdiary Backend Application for development
+Parameters:
+  DeployType:
+    Type: String
+    AllowedValues:
+    - dev
+    - stag
+    - prod
+    Default: dev
+    Description: Deploy Type
 Resources:
   UserApi:
     Type: AWS::Serverless::Api
@@ -94,3 +104,23 @@ Resources:
             Method: get
     Metadata:
       SamResourceId: LogOutUserFunction
+  DynamoStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: DynamoStack/template.yaml
+      Parameters:
+        DeployType:
+          Ref: DeployType
+    Metadata:
+      SamResourceId: DynamoStack
+  S3Stack:
+    Type: AWS::Serverless::Application
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      Location: S3Stack/template.yaml
+      Parameters:
+        DeployType:
+          Ref: DeployType
+    Metadata:
+      SamResourceId: S3Stack
