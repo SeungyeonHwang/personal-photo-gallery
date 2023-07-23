@@ -7,4 +7,5 @@ region = "ap-northeast-1"
 capabilities = "CAPABILITY_IAM"
 image_repositories = []
 confirm_changeset = true
-parameter_overrides = "DeployType=\"dev\""
+parameter_overrides = "DeployType=\"dev\" DBMasterUsername=\"admin\" VpcId=\"vpc-0f1c4d73af9f53a58\""
+disable_rollback = true

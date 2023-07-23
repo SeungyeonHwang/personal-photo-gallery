@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  DeployType:
+    Type: String
+  DBMasterUsername:
+    Type: String
+  DBMasterPassword:
+    Type: String
+    NoEcho: true
+  VpcId:
+    Type: String
+Resources:
+  DBCluster:
+    Type: AWS::RDS::DBCluster
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      Engine: aurora-mysql
+      MasterUsername:
+        Ref: DBMasterUsername
+      MasterUserPassword:
+        Ref: DBMasterPassword
+      DBClusterIdentifier:
+        Fn::Sub: pictorialdiary-${DeployType}-db-cluster
+      DatabaseName: pictorialdiaryDB
+      DBSubnetGroupName: pictorialdiary-dev-db-cluster-subnet-group
+      VpcSecurityGroupIds:
+      - Fn::GetAtt:
+        - AuroraSecGroup
+        - GroupId
+  AuroraSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for Aurora MySQL Database
+      VpcId:
+        Ref: VpcId

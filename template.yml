@@ -9,6 +9,16 @@ Parameters:
       AllowedValues: [dev, stag, prod]
       Default: dev
       Description: Deploy Type
+  DBMasterUsername:
+    Type: String
+    Description: The master username for the database.
+  DBMasterPassword:
+    Type: String
+    NoEcho: true
+    Description: The master password for the database.
+  VpcId:
+    Type: String
+    Description: The ID of VPC.
 
 Resources:
   UserApi:
@@ -112,3 +122,14 @@ Resources:
       Location: stacks/s3.yml
       Parameters:
         DeployType: !Ref DeployType
+  AuroraStack:
+    Type: AWS::Serverless::Application
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Location: stacks/rds.yml
+      Parameters:
+        DeployType: !Ref DeployType
+        DBMasterUsername: !Ref DBMasterUsername
+        DBMasterPassword: !Ref DBMasterPassword
+        VpcId: !Ref VpcId
