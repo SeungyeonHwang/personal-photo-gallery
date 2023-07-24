@@ -58,6 +58,24 @@ Resources:
                 type: aws_proxy
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LogOutUserFunction.Arn}/invocations
+  PhotoApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      BinaryMediaTypes:
+      - image~1*
+      DefinitionBody:
+        openapi: 3.0.0
+        info:
+          version: 1.0.0
+        paths:
+          /photos:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PhotoUploadFunction.Arn}/invocations
   RegisterUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -114,6 +132,20 @@ Resources:
             Method: get
     Metadata:
       SamResourceId: LogOutUserFunction
+  PhotoUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: PhotoUploadFunction
+      Handler: main.go
+      Runtime: go1.x
+      Events:
+        PhotoUpload:
+          Type: Api
+          Properties:
+            Path: /photos
+            Method: post
+    Metadata:
+      SamResourceId: PhotoUploadFunction
   DynamoStack:
     Type: AWS::Serverless::Application
     Properties:

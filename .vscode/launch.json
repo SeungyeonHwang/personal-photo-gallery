@@ -1,52 +1,52 @@
 {
-    "configurations": [
-        {
-            "type": "aws-sam",
-            "request": "direct-invoke",
-            "name": "personal-photo-gallery:LogOutUserFunction",
-            "invokeTarget": {
-                "target": "template",
-                "templatePath": "${workspaceFolder}/template.yml",
-                "logicalId": "LogOutUserFunction"
-            },
-            "lambda": {
-                "payload": {
-                    "path": "${workspaceFolder}/tests/aws/cmd/request/logout.json"
-                },
-                "environmentVariables": {}
-            }
+  "configurations": [
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "personal-photo-gallery:LogOutUserFunction",
+      "invokeTarget": {
+        "target": "template",
+        "templatePath": "${workspaceFolder}/template.yml",
+        "logicalId": "LogOutUserFunction"
+      },
+      "lambda": {
+        "payload": {
+          "path": "${workspaceFolder}/tests/aws/cmd/request/logout.json"
         },
-        {
-            "type": "aws-sam",
-            "request": "direct-invoke",
-            "name": "personal-photo-gallery:LoginUserFunction",
-            "invokeTarget": {
-                "target": "template",
-                "templatePath": "${workspaceFolder}/template.yml",
-                "logicalId": "LoginUserFunction"
-            },
-            "lambda": {
-                "payload": {
-                    "path": "${workspaceFolder}/tests/aws/cmd/request/login.json"
-                },
-                "environmentVariables": {}
-            }
+        "environmentVariables": {}
+      }
+    },
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "personal-photo-gallery:LoginUserFunction",
+      "invokeTarget": {
+        "target": "template",
+        "templatePath": "${workspaceFolder}/template.yml",
+        "logicalId": "LoginUserFunction"
+      },
+      "lambda": {
+        "payload": {
+          "path": "${workspaceFolder}/tests/aws/cmd/request/login.json"
         },
-        {
-            "type": "aws-sam",
-            "request": "direct-invoke",
-            "name": "personal-photo-gallery:RegisterUserFunction",
-            "invokeTarget": {
-                "target": "template",
-                "templatePath": "${workspaceFolder}/template.yml",
-                "logicalId": "RegisterUserFunction"
-            },
-            "lambda": {
-                "payload": {
-                    "path": "${workspaceFolder}/tests/aws/cmd/request/register.json"
-                },
-                "environmentVariables": {}
-            }
-        }
-    ]
+        "environmentVariables": {}
+      }
+    },
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "personal-photo-gallery:RegisterUserFunction",
+      "invokeTarget": {
+        "target": "template",
+        "templatePath": "${workspaceFolder}/template.yml",
+        "logicalId": "RegisterUserFunction"
+      },
+      "lambda": {
+        "payload": {
+          "path": "${workspaceFolder}/tests/aws/cmd/request/register.json"
+        },
+        "environmentVariables": {}
+      }
+    }
+  ]
 }

@@ -23,7 +23,8 @@ Resources:
       DBClusterIdentifier:
         Fn::Sub: pictorialdiary-${DeployType}-db-cluster
       DatabaseName: pictorialdiaryDB
-      DBSubnetGroupName: pictorialdiary-dev-db-cluster-subnet-group
+      DBSubnetGroupName:
+        Fn::Sub: pictorialdiary-${DeployType}-db-cluster-subnet-group
       VpcSecurityGroupIds:
       - Fn::GetAtt:
         - AuroraSecGroup
